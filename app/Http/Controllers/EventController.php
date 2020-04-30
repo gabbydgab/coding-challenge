@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Event;
+use App\Http\Requests\CreateEventRequest;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
@@ -24,48 +26,33 @@ class EventController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  CreateEventRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(CreateEventRequest $request)
     {
-        $rules = [
-            "title" => ["required"],
-            "start_date" => ["required"],
-            "end_date" => ["required"],
-            "mon" => ["boolean", "nullable"],
-            "tue" => ["boolean", "nullable"],
-            "wed" => ["boolean", "nullable"],
-            "thu" => ["boolean", "nullable"],
-            "fri" => ["boolean", "nullable"],
-            "sat" => ["boolean", "nullable"],
-            "sun" => ["boolean", "nullable"],
-        ];
-
-        $request->validate($rules, $request->except("_token"));
-
         $title = $request->post('title');
 
         $startDate = Carbon::make($request->post('start_date'));
         $endDate = Carbon::make($request->post('end_date'));
         $period = new \DatePeriod($startDate, \DateInterval::createFromDateString("1 day"), $endDate->addDay());
 
+        $repeats = Collection::make([
+            "Mon" => $request->post('mon'),
+            "Tue" => $request->post('tue'),
+            "Wed" => $request->post('wed'),
+            "Thu" => $request->post('thu'),
+            "Fri" => $request->post('fri'),
+            "Sat" => $request->post('sat'),
+            "Sun" => $request->post('sun'),
+        ]);
+
         foreach ($period as $day) {
-            if ($day->isMonday() && $request->post('mon')) {
-                Event::updateOrCreate(["date" => $day->format("Y-m-d")],["title" => $title]);
-            } elseif ($day->isTuesday() && $request->post('tue')) {
-                Event::updateOrCreate(["date" => $day->format("Y-m-d")],["title" => $title]);
-            } elseif ($day->isWednesday() && $request->post('wed')) {
-                Event::updateOrCreate(["date" => $day->format("Y-m-d")],["title" => $title]);
-            } elseif ($day->isThursday() && $request->post('thu')) {
-                Event::updateOrCreate(["date" => $day->format("Y-m-d")],["title" => $title]);
-            } elseif ($day->isFriday() && $request->post('fri')) {
-                Event::updateOrCreate(["date" => $day->format("Y-m-d")],["title" => $title]);
-            } elseif ($day->isSaturday() && $request->post('sat')) {
-                Event::updateOrCreate(["date" => $day->format("Y-m-d")],["title" => $title]);
-            } elseif ($day->isSunday() && $request->post('sun')) {
-                Event::updateOrCreate(["date" => $day->format("Y-m-d")],["title" => $title]);
-            }
+            $repeats->each(function($value, $key) use ($day, $title)  {
+                if (($key === $day->getTranslatedShortDayName()) && $value) {
+                    Event::updateOrCreate(["date" => $day->format("Y-m-d")],["title" => $title]);
+                }
+            });
         }
 
         $events = Event::whereTitle($title)->orderBy("date", "ASC")->get();

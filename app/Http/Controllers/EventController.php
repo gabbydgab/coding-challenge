@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Event;
 use App\Http\Requests\CreateEventRequest;
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class EventController extends Controller
 {
@@ -23,41 +22,19 @@ class EventController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  CreateEventRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(CreateEventRequest $request)
+    public function store(CreateEventRequest $request) : JsonResource
     {
-        $title = $request->post('title');
-
-        $startDate = Carbon::make($request->post('start_date'));
-        $endDate = Carbon::make($request->post('end_date'));
-        $period = new \DatePeriod($startDate, \DateInterval::createFromDateString("1 day"), $endDate->addDay());
-
-        $repeats = Collection::make([
-            "Mon" => $request->post('mon'),
-            "Tue" => $request->post('tue'),
-            "Wed" => $request->post('wed'),
-            "Thu" => $request->post('thu'),
-            "Fri" => $request->post('fri'),
-            "Sat" => $request->post('sat'),
-            "Sun" => $request->post('sun'),
-        ]);
-
-        foreach ($period as $day) {
-            $repeats->each(function($value, $key) use ($day, $title)  {
-                if (($key === $day->getTranslatedShortDayName()) && $value) {
-                    Event::updateOrCreate(["date" => $day->format("Y-m-d")],["title" => $title]);
+        foreach ($request->datesFromTheSelectedPeriod() as $date) {
+            $request->selectedDay()->each(function($isSelected, $day) use ($date, $request)  {
+                if (($day === $date->getTranslatedShortDayName()) && $isSelected) {
+                    Event::setSchedule($request->eventTitle(), $date);
                 }
             });
         }
 
-        $events = Event::whereTitle($title)->orderBy("date", "ASC")->get();
+        // maybe you can have $request->notifyListeners() before you return the api resource
 
-        return response()->json(["type" => "event", "data" => $events->toArray(), "message" => "Saved"], 201);
+        return $request->jsonResourceResponse();
     }
 
     /**

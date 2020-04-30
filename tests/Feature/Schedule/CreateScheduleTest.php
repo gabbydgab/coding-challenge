@@ -29,7 +29,7 @@ class CreateScheduleTest extends TestCase
         // just 1 because it's a same day event
         $this->assertEquals(1, $events->count());
 
-        $response->assertStatus(201)
+        $response->assertSuccessful()
             ->assertJsonFragment([
                 "type" => "event",
                 "message" => "Saved",
@@ -58,7 +58,7 @@ class CreateScheduleTest extends TestCase
         // Should equal to 10 events since there are 5 Saturdays and 5 Sundays for May 2020
         $this->assertEquals(10, $events->count());
 
-        $response->assertStatus(201)
+        $response->assertSuccessful()
             ->assertJsonFragment([
                 "type" => "event",
                 "message" => "Saved",
@@ -90,7 +90,7 @@ class CreateScheduleTest extends TestCase
         // Should equal to 21 events since there are 10-days weekend for May 2020
         $this->assertEquals(21, $events->count());
 
-        $response->assertStatus(201)
+        $response->assertSuccessful()
             ->assertJsonFragment([
                 "type" => "event",
                 "message" => "Saved",

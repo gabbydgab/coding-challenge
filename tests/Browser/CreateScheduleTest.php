@@ -14,7 +14,6 @@ class CreateScheduleTest extends DuskTestCase
      */
     public function noFacebookForAMonth()
     {
-        $this->withoutExceptionHandling();
         $this->browse(function (Browser $browser) {
 
             $title = "NO Facebook";

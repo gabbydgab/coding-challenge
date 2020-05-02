@@ -26,7 +26,7 @@ class EventController extends Controller
     {
         foreach ($request->datesFromTheSelectedPeriod() as $date) {
             $request->selectedDay()->each(function($isSelected, $day) use ($date, $request)  {
-                if (($day === $date->getTranslatedShortDayName()) && $isSelected) {
+                if ($day === $date->getTranslatedShortDayName()) {
                     Event::setSchedule($request->eventTitle(), $date);
                 }
             });

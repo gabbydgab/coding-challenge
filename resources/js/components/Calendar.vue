@@ -120,9 +120,9 @@
                     data: this.event
                 })
                 .then(response => {
+                    this.getEvents();
                     this.resetForm();
                     this.$refs.snackbar.info(response.data.message);
-                    this.getEvents();
                 })
                 .catch(error => {
                     this.$refs.snackbar.warn("Cannot save event");

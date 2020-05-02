@@ -9,20 +9,52 @@ use Tests\DuskTestCase;
 class CreateScheduleTest extends DuskTestCase
 {
     /**
-     * A month long schedule - in short, it's everyday
      * @test
      */
-    public function noFacebookForAMonth()
+    public function scheduleForHaircut() : void
     {
         $this->browse(function (Browser $browser) {
 
-            $title = "NO Facebook";
+            $title = "For haircut";
+
+            $date = now();
+            $mm = in_array($date->month, [12, 11, 10]) ? "0{$date->month}" : $date->month;
+            $day = random_int(1, 30);
+            $date = "$mm/$day/$date->year";
 
             $browser->visit(new CalendarPage())
                 ->waitForText("Calendar")
-                ->scheduleForOneMonth($title)
+                ->scheduleOnceFor($title, $date)
                 ->click("#save")
-                ->waitUntilMissingText($title);
+                ->waitUntilMissingText($title)
+                ->waitForText("Save");
+        });
+    }
+
+    /**
+     * @test
+     */
+    public function overrideGymAppointmentToEatingIceCream() : void
+    {
+        $this->browse(function (Browser $browser) {
+
+            $appointment1 = "Gym";
+            $appointment2 = "Eat all-you-can Ice Cream";
+
+            $date = now();
+            $mm = in_array($date->month, [12, 11, 10]) ? "0{$date->month}" : $date->month;
+            $day = random_int(1, 30);
+            $date = "$mm/$day/$date->year";
+
+            $browser->visit(new CalendarPage())
+                ->waitForText("Calendar")
+                ->scheduleOnceFor($appointment1, $date)
+                ->click("#save")
+                ->waitUntilMissingText($appointment1)
+                ->scheduleOnceFor($appointment2, $date)
+                ->click("#save")
+                ->waitUntilMissingText($appointment2)
+                ->waitForText("Save");
         });
     }
 
@@ -40,7 +72,8 @@ class CreateScheduleTest extends DuskTestCase
                 ->waitForText("Calendar")
                 ->scheduleWeekdaysFor($title)
                 ->click("#save")
-                ->waitUntilMissingText($title);
+                ->waitUntilMissingText($title)
+                ->waitForText("Save");
         });
     }
 
@@ -58,45 +91,27 @@ class CreateScheduleTest extends DuskTestCase
                 ->waitForText("Calendar")
                 ->scheduleWeekendsFor($title)
                 ->click("#save")
-                ->waitUntilMissingText($title);
+                ->waitUntilMissingText($title)
+                ->waitForText("Save");
         });
     }
 
     /**
+     * A month long schedule - in short, it's everyday
      * @test
      */
-    public function overrideGymAppointmentToEatingIceCream() : void
+    public function noFacebookForAMonth()
     {
         $this->browse(function (Browser $browser) {
 
-            $appointment1 = "Gym";
-            $appointment2 = "Eat all-you-can Ice Cream";
+            $title = "NO Facebook";
 
             $browser->visit(new CalendarPage())
                 ->waitForText("Calendar")
-                ->scheduleOnceAMonthFor($appointment1)
+                ->scheduleForOneMonth($title)
                 ->click("#save")
-                ->waitUntilMissingText($appointment1)
-                ->scheduleOnceAMonthFor($appointment2)
-                ->click("#save")
-                ->waitUntilMissingText($appointment2);
-        });
-    }
-
-    /**
-     * @test
-     */
-    public function scheduleForPayrollNextMonth() : void
-    {
-        $this->browse(function (Browser $browser) {
-
-            $title = "Collect Payroll";
-
-            $browser->visit(new CalendarPage())
-                ->waitForText("Calendar")
-                ->scheduleOnceAMonthFor($title)
-                ->click("#save")
-                ->waitUntilMissingText($title);
+                ->waitUntilMissingText($title)
+                ->waitForText("Save");
         });
     }
 }

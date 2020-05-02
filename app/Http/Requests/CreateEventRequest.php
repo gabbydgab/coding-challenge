@@ -74,7 +74,9 @@ class CreateEventRequest extends FormRequest
             "Fri" => $this->fri,
             "Sat" => $this->sat,
             "Sun" => $this->sun,
-        ]);
+        ])->filter(function($isSelected){
+            return (bool) $isSelected;
+        });
     }
 
     public function eventTitle() : string
